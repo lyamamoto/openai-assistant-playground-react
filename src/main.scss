@@ -1,0 +1,81 @@
+#app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    #app-header {
+        width: 100%;
+    }
+
+    #messages {
+        display: grid;
+        row-gap: 8px;
+        width: 840px;
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            width: fit-content;
+            border-radius: 16px;
+            padding: 4px 12px;
+            animation: 0.6s ease-in-out forwards msg-pop;
+
+            .message-body {}
+            
+            .message-time {
+                opacity: 0.5;
+                font-size: 0.7em;
+                text-align: right;
+            }
+        }
+
+        .message-user {
+            justify-self: flex-end;
+            background-color: rgba(128, 255, 128, 0.4);
+        }
+
+        .message-assistant {
+            justify-self: flex-start;
+            background-color: rgba(196, 196, 196, 0.4);
+        }
+    }
+
+    #app-form {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 840px;
+
+        input {
+            width: calc(100% - 40px);
+            margin: 0px 8px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.4);
+            outline: 0px;
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        button {
+            padding: 5px;
+            border-radius: 12px;
+            border: 0px;
+            font-weight: bold;
+            background-color: rgba(128, 255, 128, 0.6);
+        }
+    }
+}
+
+@keyframes msg-pop {
+    from {
+        transform: translateY(8px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
