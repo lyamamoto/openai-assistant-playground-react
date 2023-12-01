@@ -1,12 +1,8 @@
 import React from 'react';
-import { PizzaAssistant } from "./lib/pizzaAssistant"
-import { SalesBrokerAssistant } from './lib/salesBrokerAssistant';
-import { CreditAssistant } from './lib/creditAssistant';
+import { AssistantAPI } from './lib/assistant';
 import "./main.scss";
 
-/*new SalesBrokerAssistant("bofa", "Bank of America");*/
-/*new PizzaAssistant("pizza-assistant", "Pizzaria do Marcus", { items: [{ name: "Pizza de Muzzarela", price: 30, },{ name: "Pizza de Calabresa", price: 38, },{ name: "Coca-cola", price: 12, }] });*/
-const assistant = new CreditAssistant("super-sim", "SuperSim");
+const assistant = new AssistantAPI();
 
 const Main = () => {
 	const [messages, setMessages] = React.useState<any[] | null>(null);
@@ -14,8 +10,8 @@ const Main = () => {
 	const [threadId, setThreadId] = React.useState<string>();
 
 	const init = () => {
-		if(assistant.ready) assistant.startNewThread().then(thread => { setThreadId(thread?.id) });
-		else setTimeout(init, 500);
+		if(!threadId) assistant.startNewThread().then(setThreadId);
+		else setTimeout(init, 1500);
 	}
 
 	React.useEffect(init, []);
@@ -27,14 +23,26 @@ const Main = () => {
 
 	const sendMessage = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if(threadId) {
-			assistant.addMessage(threadId, inputMessage).then(message => {
+			assistant.addMessage(threadId, inputMessage).then(() => {
 				assistant.getMessages(threadId).then(messages => {
 					setMessages(messages);
 				});
 
-				assistant.runThread(threadId).then(run => {
-					assistant.getMessages(threadId).then(messages => {
-						setMessages(messages);
+				assistant.runThread(threadId).then(runId => {
+					const waitResolve = async (): Promise<boolean> => {
+						return (async () =>  await assistant.getRunStatus(threadId, runId))()
+						.then(async (status) => {
+							return ["queued", "in_progress"].indexOf(status) !== -1 ?
+								await (async (data?) =>
+									new Promise((resolve) => setTimeout(() => resolve(data), 1500)).then(waitResolve))()
+								: true
+						})
+					}
+
+					waitResolve().then(() => {
+						assistant.getMessages(threadId).then(messages => {
+							setMessages(messages);
+						});
 					});
 				});
 				setInputMessage("");
@@ -56,7 +64,7 @@ const Main = () => {
 			<div id="messages">
 				{messages?.map(message => 
 					<div key={message.id} className={`message message-${message.role}`}>
-						<span className="message-body">{message.content[0].text.value}</span>
+						<span className="message-body">{message.body}</span>
 						<span className="message-time">{formatDate(message.created_at)}</span>
 					</div>
 				)}
